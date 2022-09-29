@@ -1,0 +1,56 @@
+# Skip file to clean up tex-files
+clean
+# Skip files ending in .o or .a (object and archive files)
+*.[oa]
+# Skip .aux files
+*.aux
+# Skip .backup files
+*.backup
+# Skip auxiliary files
+*.bbl
+*.blg
+*.nav
+*.snm
+# Skip BibTeX files
+#*.bib
+*.bak
+# Skip temporary files ending with a tilde
+*~
+# Skip kile project files 
+*.kilepr
+# Skip list files
+*.lof
+*.lot
+*.log
+*.toc
+# Skip intermediate/output files
+*.ps
+*.xml
+*.dvi
+*.pdf
+# Skip other files
+*.out
+*.spl
+*.sty
+*.cb
+*.sfp
+*.sfr
+# Skip bibliography style files
+model1a*.bst
+model2*.bst
+model3*.bst
+model4*.bst
+model5*.bst
+model6*.bst
+# Skip main-blx.bib
+*-blx.bib
+# Skip all files in the frag/ directory
+#frag/
+# Skip all files in the frag/ directory
+#pstex/
+# Skip figure files
+#eps/
+# Skip this file
+#.gitignore
+# Skip the reviewers' comments files
+#review*

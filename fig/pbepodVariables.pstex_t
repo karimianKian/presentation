@@ -1,0 +1,21 @@
+\begin{picture}(0,0)%
+\includegraphics{pbepodVariables.pstex}%
+\end{picture}%
+\setlength{\unitlength}{4144sp}%
+%
+\begingroup\makeatletter\ifx\SetFigFont\undefined%
+\gdef\SetFigFont#1#2#3#4#5{%
+  \reset@font\fontsize{#1}{#2pt}%
+  \fontfamily{#3}\fontseries{#4}\fontshape{#5}%
+  \selectfont}%
+\fi\endgroup%
+\begin{picture}(7452,1530)(1339,-3379)
+\put(5064,-2146){\makebox(0,0)[b]{\smash{{\SetFigFont{12}{14.4}{\familydefault}{\mddefault}{\updefault}{\color[rgb]{0,0,0}$F(\tau,t)$, $\bar{l}(\tau,t)$}%
+}}}}
+\put(2138,-2146){\makebox(0,0)[b]{\smash{{\SetFigFont{12}{14.4}{\familydefault}{\mddefault}{\updefault}{\color[rgb]{0,0,0}$N(l,t)$}%
+}}}}
+\put(7989,-2146){\makebox(0,0)[b]{\smash{{\SetFigFont{12}{14.4}{\familydefault}{\mddefault}{\updefault}$\abf(t)$, $\bbf(t)$}}}}
+\put(3601,-3301){\makebox(0,0)[b]{\smash{{\SetFigFont{12}{14.4}{\familydefault}{\mddefault}{\updefault}Method of characteristics}}}}
+\put(6526,-3301){\makebox(0,0)[b]{\smash{{\SetFigFont{12}{14.4}{\familydefault}{\mddefault}{\updefault}Discretization/Galerkin projection}}}}
+\put(8776,-3301){\makebox(0,0)[b]{\smash{{\SetFigFont{12}{14.4}{\familydefault}{\mddefault}{\updefault}$\phibf(\tau)$, $\psibf(\tau)$}}}}
+\end{picture}%
