@@ -1,6 +1,6 @@
 \documentclass[10pt,xcolor=dvipsnames]{beamer}
 \usepackage[english]{babel}
-\usepackage{amsmath}
+\usepackage{amsmath, mathtools}
 \usepackage{amstext}
 \usepackage{amsthm}
 \usepackage{amssymb}
@@ -125,7 +125,7 @@
 \begin{center}
 \setstretch{1.75}
 \structure{\Large A Eulerian characteristics-based model reduction approach for the spatially inhomogeneous population balance equation} \\[0\baselineskip]
-Kian Karimian\\[0.5\baselineskip]
+Kian Karimian and Fabian Sewerin\\[0.5\baselineskip]
 %\resizebox{\columnwidth}{!}{\input{fig/titleFigure.pstex_t}}\\
 \end{center}
 
@@ -150,45 +150,340 @@ Kian Karimian\\[0.5\baselineskip]
 \begin{frame}[t]
 
   \frametitle{Outline}
+  \vfill
   \begin{enumerate}
    \item Introduction
-   \item Reviewing simulation strategies for rotor stator interactions
+   \item Reviewing simulation strategies for rotor stator interactions (RSI)
    \item Concept of mesh tying
    \item Current results
    \item Outlook
   \end{enumerate}
-
-
+  \vfill
 \end{frame}
 
 \begin{frame}[t]
 
-  \frametitle{1. Introduction -- Brief context}
+  \frametitle{Brief project overview}
   \vfill
+  \structure{Project overview}
     \includegraphics[width=\columnwidth]{fig/overview.eps}
-  \vfill
-\end{frame}
-
-\begin{frame}[t]
-\frametitle{1. Introduction -- Current challenges}
-  \begin{itemize}
-    \item Main flow solver already implemented in BOFFIN
+    \structure{Current challenges}
+    \begin{itemize}
+    \item Main solver already implemented in BOFFIN
     \item Adequate growth and metabolism kinetics for stem cells
     \item Simulation of rotor stator interactions
   \end{itemize}
+  \vfill
+\end{frame}
+
+\section{Review simulation of rotor stator interactions}
+\begin{frame}[t]
+\frametitle{Reviewing simulation methods for RSI}
+\vfill
+  \begin{itemize}
+    \item Impeller boundary condition method
+    \item Immersed boundary methods
+    \end{itemize}
+    \begin{snugshade}
+    \begin{itemize}
+    \item Multiple Reference Frames (MRF)
+    \item Sliding Mesh
+  \end{itemize}
+  \end{snugshade}
+  \vfill
+\end{frame}
+
+\begin{frame}[t]
+\frametitle{Multiple Reference Frames}
+\vspace*{1cm}
+\begin{minipage}{\columnwidth}
+ \begin{minipage}{0.49\columnwidth}
+   \structure{Assumptions}
+  \begin{itemize}
+   \item Weak interaction between rotor and stator
+   \item Steady solution in every reference frame
+  \end{itemize}
+  \structure{Benefits}
+  \begin{itemize}
+    \item Computationally efficient
+    \item Easy implementation / no interpolation
+  \end{itemize}
+ \end{minipage}
+ \begin{minipage}{0.49\columnwidth}
+  \qquad\includegraphics[width=0.85\columnwidth]{mrf}
+ \end{minipage}
+
+
+\end{minipage}
+
 
 \end{frame}
 
-\section{Review}
+\begin{frame}[t]
+\frametitle{Sliding mesh}
+\vspace*{1cm}
+\begin{minipage}{\columnwidth}
+\begin{minipage}{0.49\columnwidth}
+ \structure{Benefit}
+  \begin{itemize}
+   \item Detailed transient description of the flow field
+  \end{itemize}
+  \structure{Problems}
+  \begin{itemize}
+    \item Computationally demanding
+    \begin{snugshade} \item Requires conserving interpolation at the interface \end{snugshade}
+  \end{itemize}
+\end{minipage}
+\begin{minipage}{0.5\columnwidth}
+{\includegraphics[width=\columnwidth]{slidingMesh}}
+\end{minipage}
+\end{minipage}
+
+
+
+\end{frame}
+
+\begin{frame}[t]
+\frametitle{Mesh tying}
+\vfill
+  \structure{Outlining the main idea}
+  \begin{itemize}
+    \item Decompose domain into two reference frames
+    \item In both frames compute the respective solution
+    \item Treat interfacial fluxes as unkown Lagrange multipliers
+    \item Constrain Lagrange multipliers by requiring a continuous solution
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Mesh tying: Example for the steady onedimensional transport equation}
+ \structure{Continuous problem}
+ \begin{equation*}
+ \begin{dcases}
+  0 = -\frac{\partial \rho u T_1}{\partial x} + \frac{\partial}{\partial x}\left(\Gamma \frac{\partial T_1 }{\partial x}\right) & x\in\Omega_1\\
+  0 = -\frac{\partial \rho u T_2}{\partial x} + \frac{\partial}{\partial x}\left(\Gamma \frac{\partial T_2 }{\partial x}\right) & x\in\Omega_2\\
+  -\frac{\partial T_1}{\partial x} = -\frac{\partial T_2}{\partial x} = \lambda & x\in\Gamma_{12}\\
+  T1 = T2 & x\in\Gamma_{12}
+ \end{dcases}
+ \end{equation*}
+\end{frame}
+
+\begin{frame}[t]
+ \frametitle{Mesh tying: Example for the steady onedimensional transport equation}
+\vfill
+ \structure{Discrete problem}
+ \begin{equation*}
+ \begin{dcases}
+  \mathbf A_{11} \mathbf T_1 = \mathbf b_1 + \lambda \mathbf e_1 \\
+  \mathbf A_{22}\mathbf T_2 = \mathbf b_1 + \lambda \mathbf e_2 \\
+  \mathbf c_1^T \mathbf T_1 - \mathbf c_2^T \mathbf T_2 = 0
+ \end{dcases}
+ \end{equation*}
+ \\
+ \structure{Transform into one system}
+ \begin{equation*}
+  \tcbhighmath{\begin{bmatrix}
+   \mathbf A_{11} & \mathbf 0 & -\mathbf e_1\\
+   \mathbf 0 & \mathbf A_{22} & -\mathbf e_2\\
+   \mathbf c_1^T & \mathbf c_2^T & 0
+  \end{bmatrix}}
+  \begin{pmatrix}
+  \mathbf T_1\\ \mathbf T_2\\ \lambda
+  \end{pmatrix}
+ = \begin{pmatrix}
+    \mathbf b_1 \\ \mathbf b_2 \\ 0
+   \end{pmatrix}
+ \end{equation*}
+ \structure{LU-decomposition}
+ \begin{equation*}
+  \begin{bmatrix}
+   \mathbf I & \mathbf0 & \mathbf 0\\
+   \mathbf0 & \mathbf I & \mathbf 0\\
+   \mathbf c_1^T\mathbf{A}_{11}^{-1} & -\mathbf c_2^T\mathbf{A}_{22}^{-1} & \mathbf c_1^T\mathbf{A}_{11}^{-1}\mathbf{e}_1\\
+    & & - \mathbf c_2^T\mathbf{A}_{22}^{-1}\mathbf{e}_2
+  \end{bmatrix}\underbrace{\begin{bmatrix}
+   \mathbf A_{11} & \mathbf0 & -\mathbf e_1\\
+   \mathbf0 & \mathbf A_{22} & -\mathbf e_2\\
+   \mathbf 0 & \mathbf 0 & 1
+  \end{bmatrix}
+  \begin{pmatrix}
+  \mathbf T_1\\ \mathbf T_2\\ \lambda
+  \end{pmatrix}}_{=:\begin{pmatrix}\mathbf S_1 & \mathbf S_2 & \lambda \end{pmatrix}^T}
+ = \begin{pmatrix}
+    \mathbf b_1 \\ \mathbf b_2 \\ 0
+   \end{pmatrix}
+ \end{equation*}
+\vfill
+\end{frame}
+
+
+
+\begin{frame}[t]
+
+\structure{First step}
+ \frametitle{Mesh tying: Example for the steady onedimensional transport equation}
+ \begin{equation*}
+  \begin{bmatrix}
+   \mathbf I & \mathbf0 & \mathbf 0\\
+   \mathbf0 & \mathbf I & \mathbf 0\\
+   \mathbf c_1^T\mathbf{A}_{11}^{-1} & -\mathbf c_2^T\mathbf{A}_{22}^{-1} & \mathbf c_1^T\mathbf{A}_{11}^{-1}\mathbf{e}_1\\
+    & & - \mathbf c_2^T\mathbf{A}_{22}^{-1}\mathbf{e}_2
+  \end{bmatrix}\begin{pmatrix}\mathbf S_1 \\ \mathbf S_2 \\ \lambda \end{pmatrix}
+ = \begin{pmatrix}
+    \mathbf b_1 \\ \mathbf b_2 \\ 0
+   \end{pmatrix}
+ \end{equation*}
+\justifying Solve for the lagrange multiplier
+ \begin{equation*}
+  (\mathbf c_1^T\tcbhighmath{\mathbf{A}_{11}^{-1}\mathbf{e}_1}  - \mathbf c_2^T\tcbhighmath{\mathbf{A}_{22}^{-1}\mathbf{e}_2})\lambda  = -\mathbf c_1^T\tcbhighmath{\mathbf A_{11}^{-1}\mathbf b_1} + \mathbf c_2^T\tcbhighmath{\mathbf A_{22}^{-1}\mathbf b_2}
+ \end{equation*}
+
+
+ \end{frame}
+
+
+\begin{frame}[t]
+
+\structure{Second step}
+ \frametitle{Mesh tying: Example for the steady onedimensional transport equation}
+\begin{equation*}
+ \begin{bmatrix}
+   \mathbf A_{11} & \mathbf0 & -\mathbf e_1\\
+   \mathbf0 & \mathbf A_{22} & -\mathbf e_2\\
+   \mathbf 0 & \mathbf 0 & 1
+  \end{bmatrix}
+  \begin{pmatrix}
+  \mathbf T_1\\ \mathbf T_2\\ \lambda
+  \end{pmatrix} = \begin{pmatrix}\mathbf S_1 \\ \mathbf S_2 \\ \lambda \end{pmatrix}
+\end{equation*}
+\justifying Compute solution on each subdomain
+\begin{equation*}
+ \begin{split}
+    \tcbhighmath{
+    \mathbf A_{11} \mathbf T_1 = \mathbf b_1 + \lambda \mathbf e_1}\\
+    \tcbhighmath{
+    \mathbf A_{22} \mathbf T_2 = \mathbf b_2 + \lambda \mathbf e_2}
+ \end{split}
+\end{equation*}
+
+\begin{itemize}
+ \item In total we have to solve four big equations with varying right-hand-sides only and one small.
+ \item (The complexity is lower when compared to a single big system \ldots)
+\end{itemize}
+
+ \end{frame}
+
+\begin{frame}[t]
+
+\frametitle{Mesh tying: Example for the steady onedimensional transport equation}
+\vfill
+\center{\includegraphics[width=0.8\columnwidth]{split1d.eps}
+}\vfill
+\end{frame}
+
+\begin{frame}[t]
+
+\frametitle{Mesh tying: 2D transient transport in rotating flow.}
+
+\justifying Consider a rotational 2d flow $ \boldsymbol u = u_\varphi \boldsymbol e_\varphi = r\omega\boldsymbol e_\varphi$\\
+ \justifying The observer in domain $\Omega_1$ rotates according to the imposed flow field.\\
+ \vspace{1cm}
+\structure{Continuous problem}
+\begin{equation*}
+ \begin{dcases}
+    \frac{\partial\rho T^\prime}{\partial t}  = \boldsymbol\nabla^\prime\cdot(\Gamma \boldsymbol \nabla^\prime T^\prime )+ S^\prime & \boldsymbol x^\prime\in \Omega_1 \\
+    \frac{\partial\rho T}{\partial t} + \boldsymbol \nabla\cdot(\rho \boldsymbol u T) = \boldsymbol\nabla\cdot(\Gamma \boldsymbol \nabla T) + S & \boldsymbol x\in \Omega_2\\
+   - (\boldsymbol \nabla^\prime T^\prime )\cdot \boldsymbol n = (\boldsymbol \nabla T)\cdot\boldsymbol n = \lambda & \boldsymbol x\in\Gamma_{12}\\
+    T^\prime = T & \boldsymbol x\in\Gamma_{12}
+ \end{dcases}
+\end{equation*}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Mesh tying: 2D transient transport in rotating flow}
+  \structure{Discrete problem}
+\begin{equation*}
+ \begin{dcases}
+   \dot{\mathbf T}_1 + \mathbf A_{11} \mathbf T_1 = \mathbf b_1 + \mathbf E_1 \boldsymbol \lambda \\
+   \dot{\mathbf T}_2 + \mathbf A_{22}\mathbf T_2 = \mathbf b_1 + \mathbf E_2\boldsymbol\lambda  \\
+  \mathbf C_1^T \mathbf T_1 - \mathbf C_2^T \mathbf T_2 = \mathbf 0
+ \end{dcases}
+ \end{equation*}
+ \begin{itemize}
+ \item Same solution strategy as before.
+ \begin{snugshade}
+  \item BUT: Face values have to be interpolated depending on current angular offset.
+ \end{snugshade}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[t]
+  \frametitle{Mesh tying: 2D transient transport in rotating flow}
+  \structure{First example}
+  \structure{Parameters}
+  \begin{snugshade}
+  \begin{itemize}
+   \item Disk radius: 1\,m with domain intersection at 0.5\,m
+   \item Homogeneous dirichlet boundary conditions and initial conditions.
+   \item $\omega = 2\pi\,\mathrm{s^{-1}},\ \rho = 1\,\mathrm{kg m^{-3}}$
+   \item $\text{cfl} = \frac{u\Delta t}{\Delta x} + 2\frac{\Gamma \Delta t}{\Delta x ^2}\leq 0.5 $ (Sabelnikov.2005)
+   \item $S(x,y) = s\exp\left(\frac{-1}{2\sigma^2}((x-x_0)^2 - (y-y_0)^2\right)$
+   \item $x_0 = 0\,\mathrm{m}$, $y_0 = 0.5\,\mathrm{m}$, $\sigma = 0.05$
+  \end{itemize}
+  \end{snugshade}
+    \begin{snugshade}
+  \begin{itemize}
+   \item Time integration: Euler backwards
+   \item Source-term integration: Gauss-Legendre quadrature
+  \end{itemize}
+  \end{snugshade}
+
+
+
+\end{frame}
+
+\begin{frame}[t]
+  \frametitle{Mesh tying: 2D transient transport in rotating flow}
+  \structure{Second example}
+\begin{snugshade}
+  \begin{itemize}
+   \item Same as before but zero source term.
+   \item $T^0(x,y) = \exp\left(\frac{-1}{2\sigma^2}(x-x_0)^2 - (y-y_0)^2\right)$
+
+  \end{itemize}
+\end{snugshade}
+    \begin{snugshade}
+  \begin{itemize}
+   \item Time integration: Euler backwards
+   \item Source-term integration: Gauss-Legendre quadrature
+  \end{itemize}
+  \end{snugshade}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Outlook}
+\begin{itemize}
+   \item Reproduce results in BOFFIN
+   \item Implement the method for Navier-Stokes equations.
+   \item Validate simulation of a stirred tank with literature.
+ \end{itemize}
+
+\end{frame}
+
+
+
+
 
 
 
 
 
 \begin{frame}[t]
-  
+
   \frametitle{Polysized nanoparticle dispersions}
-  
+
   \vspace{-0.5\baselineskip}
   \begin{minipage}[t]{0.6\columnwidth}\vskip0pt
   \justifying\structure{Physical assumptions}
@@ -204,18 +499,18 @@ Kian Karimian\\[0.5\baselineskip]
   \resizebox{\columnwidth}{!}{\input{fig/particlesRectangle.pstex_t}}
   \end{minipage}\\
   \vspace{0.5\baselineskip}
-  
+
   \structure{Governing equation}\\
   \justifying The evolution of a particle size distribution in space $\xbf$ and time $t$ is governed by the population balance equation (PBE) \cite{Hulburt1964}.
   \begin{equation*}
   \begin{split}
-    \frac{\partial N(l, \xbf, t)}{\partial t} &+ \sum_{j = 1}^{3} \frac{\partial u_j(\xbf, t) N(l, \xbf, t)}{\partial x_j} 
+    \frac{\partial N(l, \xbf, t)}{\partial t} &+ \sum_{j = 1}^{3} \frac{\partial u_j(\xbf, t) N(l, \xbf, t)}{\partial x_j}
     + \tcbhighmath{\frac{\partial G(l) N(l, \xbf, t)}{\partial l}} \\
     &= \sum_{j = 1}^{3} \frac{\partial}{\partial x_j}\left(D_p(\xbf, t) \frac{\partial N(\l, \xbf, t)}{\partial x_j}\right) + \dot{s}(l, N(\cdot, \xbf, t))
   \label{eq:pbe}
   \end{split}
   \end{equation*}
-  
+
   \structure{Which discretization scheme ought to be applied along $l$?}\\
   \justifying The fields $\Hbf(\xbf, t)$ parameterizing $N(\cdot, \xbf, t)$ constitute particle phase scalars.
   \begin{equation*}
@@ -227,9 +522,9 @@ Kian Karimian\\[0.5\baselineskip]
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FRAME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}[t]
-  
+
   \frametitle{Resolution of particle size distributions}
-  
+
   \vspace{-\baselineskip}
   \begin{minipage}[t]{0.46\columnwidth}\vskip0pt
   \structure{Fixed $l$-grid} ($n_l \sim 500$)
@@ -260,11 +555,11 @@ Kian Karimian\\[0.5\baselineskip]
   \vspace{\itemskip}
   \item is applicable to growth-dominated populations.
   \end{itemize}
-  
+
   \begin{snugshade}
   \justifying Can $n_l$ be reduced by preempting information about potential shapes of the particle size distribution? A reduced-order representation in $l$?
   \end{snugshade}
-  
+
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FRAME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -272,11 +567,11 @@ Kian Karimian\\[0.5\baselineskip]
 \begin{frame}[t]
 
   \frametitle{The method of characteristics}
-  
+
   % Reasons for considering alternative discretization schemes (other than adaptive):
   % - Is it possible to reduce the number of particle phase scalars yet further?
   % - The adaptive grid method is still subject to the curse of dimensionality! - Applicability to more than one property questionable.
-    
+
   For brevity, we first consider the spatially homogeneous PBE for $N(l, t)$
   \begin{equation*}
     \frac{\partial N}{\partial t} + \tcbhighmath{\frac{\partial G N}{\partial l}} = \dot{s} \quad\text{on}\quad [0, L] \times [0, \infty)
@@ -287,7 +582,7 @@ Kian Karimian\\[0.5\baselineskip]
   \begin{equation*}
   \begin{split}
     \frac{\partial F}{\partial t}
-    + \tcbhighmath{\frac{1}{w} \frac{\partial F}{\partial\tau} 
+    + \tcbhighmath{\frac{1}{w} \frac{\partial F}{\partial\tau}
     \left(\left.G\right|_{\bar{l}} - \frac{\partial\bar{l}}{\partial t}\right)}
     = \left.\dot{s}\right|_{\bar{l}} - \left.\frac{\partial G}{\partial l}\right|_{\bar{l}} F
   \label{eq:pbe:F}
@@ -315,14 +610,14 @@ Kian Karimian\\[0.5\baselineskip]
 \begin{frame}[t]
 
   \frametitle{Direct discretization}
-  
+
   \justifying\structure{How do $\abf$ and $\bbf$ evolve in time?}\\
   The Galerkin projections of the equations governing $F(\tau, t)$ and $\bar{l}(\tau, t)$ onto the spans of $\{\phi_i\}_{i = 1}^{n_\phi}$, $\{\psi_j\}_{j = 1}^{n_\psi}$ yield \cite{Miller1981}
   \begin{align*}
-    \int_{0}^{L} w \left(\frac{\partial F}{\partial t} 
-    + \left.\frac{\partial G}{\partial l}\right|_{\bar{l}} F - \left.\dot{s}\right|_{\bar{l}} \right)^2 \, d\tau 
+    \int_{0}^{L} w \left(\frac{\partial F}{\partial t}
+    + \left.\frac{\partial G}{\partial l}\right|_{\bar{l}} F - \left.\dot{s}\right|_{\bar{l}} \right)^2 \, d\tau
     &= \underset{\dot{\abf}}{\text{Min!}} \\
-    \int_{\Lcal} \left(\frac{\partial\bar{l}}{\partial t} - \left.G\right|_{\bar{l}}\right)^2 \, d\tau 
+    \int_{\Lcal} \left(\frac{\partial\bar{l}}{\partial t} - \left.G\right|_{\bar{l}}\right)^2 \, d\tau
     &= \underset{\dot{\bbf}}{\text{Min!}}
   \end{align*}
 %   The length of $l$-space $[0, L]$ remains unchanged if $\bbf(t)$ obeys
@@ -335,7 +630,7 @@ Kian Karimian\\[0.5\baselineskip]
   \begin{center}
   \resizebox{0.99\columnwidth}{!}{\input{fig/pbepodVariables.pstex_t}}
   \end{center}
-  
+
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FRAME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -343,7 +638,7 @@ Kian Karimian\\[0.5\baselineskip]
 \begin{frame}[t]
 
   \frametitle{Necessary conditions of optimality}
-  
+
   \structure{Spatially homogeneous evolution equations}
   \begin{align*}
     \Abf \frac{d\abf}{dt} &= \int_{0}^{L} \phibf \left.\dot{s}\right|_{\bar{l}} w \, d\tau
@@ -352,15 +647,15 @@ Kian Karimian\\[0.5\baselineskip]
     \quad\text{with}\quad
     \left.\cbf\right|_{L}^T \frac{d\bbf}{dt} = 0
   \end{align*}
-  
+
   \structure{Extension to the spatially inhomogeneous case}
   \begin{align*}
-    &\Abf \left\{\frac{\partial\abf}{\partial t} + u_j \frac{\partial\abf}{\partial x_j} 
+    &\Abf \left\{\frac{\partial\abf}{\partial t} + u_j \frac{\partial\abf}{\partial x_j}
     - \frac{\partial}{\partial x_j} \left(D_p \frac{\partial\abf}{\partial x_j}\right) \right\}
     = \int_{0}^{L} \phibf \left.\dot{s}\right|_{\bar{l}} w \, d\tau \\
     &\phantom{\Abf}+ \left(\Bbf - \int_{0}^{L} \left.\frac{\partial G}{\partial l}\right|_{\bar{l}} \phibf \phibf^T w \, d\tau\right) \abf
     - \left(2 D_p \int_{0}^{L} \frac{\partial\bar{l}}{\partial x_j} \phibf \frac{d\phibf^T}{d\tau} \, d\tau\right) \frac{\partial\abf}{\partial x_j} \\
-    &\Cbf \left\{\frac{\partial\bbf}{\partial t} + u_j \frac{\partial\bbf}{\partial x_j} - \frac{\partial}{\partial x_j}\left(D_p \frac{\partial\bbf}{\partial x_j}\right)\right\} = 
+    &\Cbf \left\{\frac{\partial\bbf}{\partial t} + u_j \frac{\partial\bbf}{\partial x_j} - \frac{\partial}{\partial x_j}\left(D_p \frac{\partial\bbf}{\partial x_j}\right)\right\} =
     \Dbf + \int_{\Lcal} \cbf \left.G\right|_{\bar{l}} \, d\tau - \lambda \left.\cbf\right|_{L}
   \end{align*}
   subject to $\left.\cbf\right|_{L}^T \partial\bbf/\partial t = 0$. Here, $\cbf$ is an auxiliary $\bbf$-dependent vector and $\Abf$, $\Bbf$, $\Cbf$ and $\Dbf$ are matrices also depending on $\bbf$.
@@ -372,7 +667,7 @@ Kian Karimian\\[0.5\baselineskip]
 \begin{frame}[t]
 
   \frametitle{Choosing shape functions}
-  
+
   \vspace{-0.75\baselineskip}
   \begin{minipage}[t]{0.45\columnwidth}\vskip0pt
   \structure{Local shape functions}
@@ -404,7 +699,7 @@ Kian Karimian\\[0.5\baselineskip]
 \begin{frame}[t]
 
   \frametitle{Calibrating shape functions}
-  
+
   \newcommand{\snapf}{\left(\begin{array}{@{}c>{\columncolor{black!10}}cc@{}} F_1(\tau_1) &F_2(\tau_1) &\cdots \\ F_1(\tau_2) &F_2(\tau_2) &\cdots \\ \vdots &\vdots &\ddots \end{array}\right)}
   \newcommand{\snapv}{\left(\begin{array}{@{}c>{\columncolor{black!10}}cc@{}} \bar{l}_1(\tau_1) &\bar{l}_2(\tau_1) &\cdots \\ \bar{l}_1(\tau_2) &\bar{l}_2(\tau_2) &\cdots \\ \vdots &\vdots &\ddots \end{array}\right)}
   \newcommand{\vecphi}{\left(\begin{array}{@{}c>{\columncolor{black!10}}cc@{}}\phi_1(\tau_1) &\phi_2(\tau_1) &\cdots \\ \phi_1(\tau_2) &\phi_2(\tau_2) &\cdots \\ \vdots &\vdots &\ddots \end{array}\right)}
@@ -416,12 +711,12 @@ Kian Karimian\\[0.5\baselineskip]
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FRAME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}[t]
-  
+
   \frametitle{Target application}
-  
+
   \justifying As test case, we consider the dispersion and growth of a particle population with hat-shaped inflow size distribution in a laminar plane jet.
   \vspace{-0.5\baselineskip}
-  
+
   \begin{figure}
   \begin{center}
   \resizebox{\columnwidth}{!}{\input{fig/planejetSchematic.pstex_t}}
@@ -429,20 +724,20 @@ Kian Karimian\\[0.5\baselineskip]
   \label{fig:setup}
   \end{center}
   \end{figure}
-    
+
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FRAME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}[t]
-  
+
   \frametitle{Training in a perfectly stirred reactor}
-  
+
   \structure{Governing equation} with $G_0 = \SI{0.5}{nm/s}$
   \begin{equation*}
     \frac{\partial N(l, t)}{\partial t} + \frac{\partial G_0 N(l, t)}{\partial l} = 0
   \end{equation*}
-  
+
   \structure{Training data generation}
   \begin{itemize}
   \vspace{\itemskip}
@@ -454,22 +749,22 @@ Kian Karimian\\[0.5\baselineskip]
 
   \includegraphics[height=0.38\columnwidth,clip]{fig/pbe_pod_hat.eps}\hfill
   \includegraphics[height=0.38\columnwidth,clip]{fig/pbe_pod_psr_fl.eps}\\
-  
+
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FRAME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}[t]
-  
+
   \frametitle{Training in a steady-state plug flow reactor}
-  
+
   \structure{Governing equation} with $G_0 = \SI{0.5}{nm/s}$, $D_p = \SI{2.5e-6}{m^2/s}$
   \begin{equation*}
     U_j \frac{\partial N(l, x)}{\partial x} + G_0 \frac{\partial N(l, x)}{\partial l}
     = D_p \frac{\partial^2 N(l, x)}{\partial x^2}
   \label{eq:plugflow}
   \end{equation*}
-  
+
   \structure{Training dataset}
   \begin{itemize}
   \vspace{\itemskip}
@@ -486,15 +781,15 @@ Kian Karimian\\[0.5\baselineskip]
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FRAME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}[t]
-  
+
   \frametitle{Reducibility}
-  
+
   \justifying Since a POD eigenvalue $\lambda_k$ quantifies the energy in the dataset matrix $\Acal \in \Rset^{n \times m}$ covered by the eigenvector $\phibf_k$, we retain $n_\phi$ modes with
   \begin{equation*}
    n_\phi = \arg \min_{k} \left( 1 - \frac{\sum_{i = 1}^{k} \lambda_i}{\sum_{j = 1}^{\min(n, m)} \lambda_j} \leq \lambda_{\max} \right)
   \end{equation*}
   and similarly for $n_\psi$. Here, $\lambda_{\max}\in[0, 1)$ represents a \textit{loss threshold}.
-  
+
   \begin{minipage}[t]{0.49\columnwidth}\vskip0pt\centering\small
   \includegraphics[height=0.75\columnwidth,clip]{fig/plugflow_decay.eps}\\
   \structure{(a)} Decay of eigenvalues.
@@ -503,11 +798,11 @@ Kian Karimian\\[0.5\baselineskip]
   \includegraphics[height=0.75\columnwidth,clip]{fig/plugflow_II_phi.eps}\\
   \structure{(b)} Calibrated shape functions.
   \end{minipage}\\
-    
+
   % Show trained shape functions on the left (both \phi and \psi)
-  
+
   % Mention criteria for choosing shape functions
-  
+
   % Show decay in POD eigenvalues on the right; include POD eigenvalues for fixed grid solution for comparison
 
 \end{frame}
@@ -515,13 +810,13 @@ Kian Karimian\\[0.5\baselineskip]
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FRAME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}[t]
-  
+
   \frametitle{Convergence properties of the PBE-POD method}
-  
+
   \begin{center}
   \includegraphics[width=0.65\columnwidth,clip]{fig/plugflow_convergence.eps}
   \end{center}
-  
+
   \structure{Observations}
   \begin{itemize}
   \vspace{\itemskip}
@@ -537,17 +832,17 @@ Kian Karimian\\[0.5\baselineskip]
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FRAME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}[t]
-  
+
   \frametitle{Plane jet test case}
-  
+
   \vspace{-0.5\baselineskip}
   \begin{minipage}[t]{0.7\columnwidth}\vskip0pt
   \resizebox{\columnwidth}{!}{\input{fig/planejetContour.pstex_t}}\\
   \end{minipage}\hfill
   \begin{minipage}[t]{0.29\columnwidth}\vskip0pt
   \hfill\structure{Particle loading}\\
-  \end{minipage}  
-  
+  \end{minipage}
+
   \begin{minipage}[t]{0.36\columnwidth}\vskip0pt
   \justifying\structure{Accuracy} for $\lambda_{\max} = 10^{-5}$\\
   \begin{itemize}
@@ -557,7 +852,7 @@ Kian Karimian\\[0.5\baselineskip]
   \item Plug flow reactor\\(PFR):\\$n_\phi = 4$, $n_\psi = 3$
   \end{itemize}
   \end{minipage}\hfill
-  \begin{minipage}[t]{0.57\columnwidth}\vskip0pt  
+  \begin{minipage}[t]{0.57\columnwidth}\vskip0pt
   \hfill\includegraphics[width=\columnwidth,clip]{fig/planejet_psds_xr.eps}
   \end{minipage}
 
@@ -566,9 +861,9 @@ Kian Karimian\\[0.5\baselineskip]
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FRAME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}[t]
-  
+
   \frametitle{Efficacy in parameterizing the particle size distribution}
-  
+
   \begin{minipage}[t]{0.42\columnwidth}\vskip0pt
   \justifying\structure{Convergence properties}\\[0.25\baselineskip]
   \begin{itemize}
@@ -580,7 +875,7 @@ Kian Karimian\\[0.5\baselineskip]
   \end{itemize}
   \end{minipage}\hfill
   \begin{minipage}[t]{0.54\columnwidth}\vskip0pt
-  \includegraphics[width=\columnwidth,clip]{fig/planejet_convergence_l1.eps}   
+  \includegraphics[width=\columnwidth,clip]{fig/planejet_convergence_l1.eps}
   \end{minipage}\\[0.25\baselineskip]
 
   \justifying\structure{Runtimes}\\
@@ -610,22 +905,22 @@ Kian Karimian\\[0.5\baselineskip]
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FRAME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{frame}[t]
-  
+
   \frametitle{Summary and outlook}
-  
+
   \justifying By synthesizing
   \begin{enumerate}
   \vspace{\itemskip}
   \item the notion of characteristics based on an $(\xbf, t)$-dependent coordinate transformation on particle size space and
   \vspace{\itemskip}
-  \item a constrained Galerkin projection with 
+  \item a constrained Galerkin projection with
   \vspace{\itemskip}
   \item a POD-based training procedure
   \vspace{\itemskip}
-  \end{enumerate} 
-  
+  \end{enumerate}
+
   we developed a direct solution method for the PBE which
-  
+
   \begin{itemize}
   \vspace{\itemskip}
   \item tolerates growth dominated regimes,
@@ -633,7 +928,7 @@ Kian Karimian\\[0.5\baselineskip]
   \item attains a moderate accuracy in solutions for the size distribution at very few degrees of freedom.
   \end{itemize}
   \vspace{0.5\baselineskip}
-  
+
   \structure{Open challenges}
   \begin{itemize}
   \vspace{\itemskip}
@@ -642,9 +937,9 @@ Kian Karimian\\[0.5\baselineskip]
   \item Bivariate distributions?
   \end{itemize}
   \vspace{0.5\baselineskip}
-  
+
   \justifying For more details: Sewerin, \textit{Chem. Eng. Sci.} 252, 117101, 2022.
-  
+
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% FRAME %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -671,3 +966,4 @@ Kian Karimian\\[0.5\baselineskip]
 \end{frame}
 
 \end{document}
+\justifying
